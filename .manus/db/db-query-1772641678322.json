@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `contactSubmissions` MODIFY COLUMN `consultationType` enum('content_production','localization_service','strategy_consulting','partner_application','other') NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2hXauVYnZtd6Dpw.root --database KgPGxcZYtgtWKQPGAYK8tN --execute ALTER TABLE `contactSubmissions` MODIFY COLUMN `consultationType` enum('content_production','localization_service','strategy_consulting','partner_application','other') NOT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2541
+}

@@ -1,0 +1,1 @@
+ALTER TABLE `contactSubmissions` MODIFY COLUMN `consultationType` enum('content_production','localization_service','strategy_consulting','partner_application','other') NOT NULL;
