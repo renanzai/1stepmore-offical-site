@@ -1,10 +1,24 @@
-import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
-import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+
+// Optional Manus-specific plugins - gracefully skip if not installed
+let jsxLocPlugin: (() => Plugin) | null = null;
+let vitePluginManusRuntime: (() => Plugin) | null = null;
+
+try {
+  jsxLocPlugin = (await import("@builder.io/vite-plugin-jsx-loc")).jsxLocPlugin;
+} catch {
+  // @builder.io/vite-plugin-jsx-loc not available, skipping
+}
+
+try {
+  vitePluginManusRuntime = (await import("vite-plugin-manus-runtime")).vitePluginManusRuntime;
+} catch {
+  // vite-plugin-manus-runtime not available, skipping
+}
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -150,7 +164,13 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const plugins: Plugin[] = [
+  react() as Plugin,
+  tailwindcss() as Plugin,
+  ...(jsxLocPlugin ? [jsxLocPlugin() as Plugin] : []),
+  ...(vitePluginManusRuntime ? [vitePluginManusRuntime() as Plugin] : []),
+  vitePluginManusDebugCollector(),
+];
 
 export default defineConfig({
   plugins,
