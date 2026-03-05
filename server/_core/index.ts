@@ -7,6 +7,28 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
+function tryListen(
+  server: ReturnType<typeof createServer>,
+  port: number,
+  maxPort: number
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const onError = (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE" && port < maxPort) {
+        server.removeListener("error", onError);
+        resolve(tryListen(server, port + 1, maxPort));
+      } else {
+        reject(err);
+      }
+    };
+    server.on("error", onError);
+    server.listen(port, "0.0.0.0", () => {
+      server.removeListener("error", onError);
+      resolve(port);
+    });
+  });
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
@@ -31,11 +53,9 @@ async function startServer() {
     serveStatic(app);
   }
 
-  const port = parseInt(process.env.PORT || "3000");
-
-  server.listen(port, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${port}/`);
-  });
+  const preferredPort = parseInt(process.env.PORT || "3000");
+  const actualPort = await tryListen(server, preferredPort, preferredPort + 20);
+  console.log(`Server running on http://0.0.0.0:${actualPort}/`);
 }
 
 startServer().catch(console.error);
