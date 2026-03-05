@@ -2,20 +2,22 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 
 // Optional Manus-specific plugins - gracefully skip if not installed
+const _require = createRequire(import.meta.url);
 let jsxLocPlugin: (() => Plugin) | null = null;
 let vitePluginManusRuntime: (() => Plugin) | null = null;
 
 try {
-  jsxLocPlugin = (await import("@builder.io/vite-plugin-jsx-loc")).jsxLocPlugin;
+  jsxLocPlugin = _require("@builder.io/vite-plugin-jsx-loc").jsxLocPlugin;
 } catch {
   // @builder.io/vite-plugin-jsx-loc not available, skipping
 }
 
 try {
-  vitePluginManusRuntime = (await import("vite-plugin-manus-runtime")).vitePluginManusRuntime;
+  vitePluginManusRuntime = _require("vite-plugin-manus-runtime").vitePluginManusRuntime;
 } catch {
   // vite-plugin-manus-runtime not available, skipping
 }
@@ -190,18 +192,9 @@ export default defineConfig({
   },
   server: {
     host: true,
-    allowedHosts: [
-      ".manuspre.computer",
-      ".manus.computer",
-      ".manus-asia.computer",
-      ".manuscomputer.ai",
-      ".manusvm.computer",
-      "localhost",
-      "127.0.0.1",
-    ],
+    allowedHosts: true,
     fs: {
-      strict: true,
-      deny: ["**/.*"],
+      strict: false,
     },
   },
 });
