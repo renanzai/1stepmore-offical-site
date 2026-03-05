@@ -48,18 +48,37 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // Always use dist/public directory for static files
-  const distPath = path.resolve(import.meta.dirname, "../..", "dist", "public");
-  if (!fs.existsSync(distPath)) {
+  // Try multiple possible paths for static files
+  const possiblePaths = [
+    // Local development path
+    path.resolve(import.meta.dirname, "../..", "dist", "public"),
+    // Vercel deployment path
+    path.resolve(process.cwd(), "dist", "public"),
+    // Fallback to current directory
+    path.resolve(process.cwd(), "public")
+  ];
+
+  let distPath = possiblePaths.find(path => fs.existsSync(path));
+  
+  if (!distPath) {
     console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
+      `Could not find the build directory. Tried: ${possiblePaths.join(", ")}`
     );
+    // Use a default path as fallback
+    distPath = possiblePaths[0];
   }
 
+  console.log(`Serving static files from: ${distPath}`);
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexHtmlPath = path.resolve(distPath, "index.html");
+    if (fs.existsSync(indexHtmlPath)) {
+      res.sendFile(indexHtmlPath);
+    } else {
+      console.error(`Could not find index.html at: ${indexHtmlPath}`);
+      res.status(404).send("Not Found");
+    }
   });
 }
