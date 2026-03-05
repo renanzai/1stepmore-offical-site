@@ -1,8 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
   "rewrites": [
     {
